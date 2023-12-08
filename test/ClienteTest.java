@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 
 public class ClienteTest {
     private IClienteDAO clienteDAO;
+
     @Test
     public void cadastrarTest() throws Exception {
         clienteDAO = new ClienteDAO();
@@ -28,6 +29,7 @@ public class ClienteTest {
         Integer countDel = clienteDAO.excluir(clienteBD);
         assertTrue(countDel == 1);
     }
+}
 
     /**
      *
