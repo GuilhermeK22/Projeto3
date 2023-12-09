@@ -1,7 +1,8 @@
 package dao.generic.jdbc.dao;
 
 import dao.generic.jdbc.ConnectionFactory;
-import domain.Cliente;
+import domain.Produto;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,124 +11,129 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClienteDAO implements IClienteDAO {
+public class ProdutoDAO implements IProdutoDAO{
     @Override
-    public Integer cadastrar(Cliente cliente) throws Exception {
+    public Integer cadastrar(Produto produto) throws Exception {
         Connection connection = null;
         PreparedStatement stm = null;
         try {
             connection = ConnectionFactory.getConnection();
             String sql = getSqlInsert();
             stm = connection.prepareStatement(sql);
-            adicionarParametrosInsert(stm, cliente);
+            adicionarParametrosInsert(stm, produto);
             return stm.executeUpdate();
         } catch (Exception e) {
-            throw e;
+        throw e;
         } finally {
-            closeConnection(connection, stm, null);
+            closeConection(connection, stm, null);
         }
     }
+
     @Override
-    public Integer atualizar(Cliente cliente) throws Exception {
-            Connection connection = null;
+    public Integer atualizar(Produto produto) throws Exception {
+        Connection connection = null;
         PreparedStatement stm = null;
         try {
             connection = ConnectionFactory.getConnection();
             String sql = getSqlUpdate();
             stm = connection.prepareStatement(sql);
-            adicionarParametrosUpdate(stm, cliente);
+            adicionarParametrosUpdate(stm, produto);
             return stm.executeUpdate();
         } catch (Exception e) {
             throw e;
         } finally {
-            closeConnection(connection, stm, null);
+            closeConection(connection, stm, null);
         }
     }
+
+
     @Override
-    public Cliente buscar(String codigo) throws Exception {
-            Connection connection = null;
+    public Produto buscar(String codigo) throws Exception{
+        Connection connection = null;
         PreparedStatement stm = null;
         ResultSet rs = null;
-        Cliente cliente = null;
-            try {
-                connection = ConnectionFactory.getConnection();
-                String sql = getSqlSelect();
-                stm = connection.prepareStatement(sql);
-                adicionarParametrosSelect(stm, codigo);
-                rs = stm.executeQuery();
+        Produto produto = null;
+        try {
+            connection = ConnectionFactory.getConnection();
+            String sql = getSqlSelect();
+            stm = connection.prepareStatement(sql);
+            adicionarParametrosSelect(stm, codigo);
+            rs = stm.executeQuery();
             if (rs.next()) {
-                cliente = new Cliente();
+                produto = new Produto();
                 Long id = rs.getLong("id");
                 String nome = rs.getString("nome");
                 String cd = rs.getString("codigo");
-                cliente.setId(id);
-                cliente.setNome(nome);
-                cliente.setCodigo(cd);
+                produto.setId(id);
+                produto.setNome(nome);
+                produto.setCodigo(cd);
             }
         } catch (Exception e) {
             throw e;
         } finally {
-            closeConnection(connection, stm, rs);
+            closeConection(connection, stm, rs);
         }
-        return cliente;
+        return produto;
     }
+
     @Override
-    public List<Cliente> buscarTodos() throws Exception {
-            Connection connection = null;
+    public List<Produto> buscarTodos() throws Exception {
+        Connection connection = null;
         PreparedStatement stm = null;
         ResultSet rs = null;
-        List<Cliente> list = new ArrayList<>();
-        Cliente cliente = null;
+        List<Produto> list = new ArrayList<>();
+        Produto produto = null;
         try {
             connection = ConnectionFactory.getConnection();
             String sql = getSqlSelectAll();
             stm = connection.prepareStatement(sql);
             rs = stm.executeQuery();
             while (rs.next()) {
-                cliente = new Cliente();
+                produto = new Produto();
                 Long id = rs.getLong("id");
                 String nome = rs.getString("nome");
                 String cd = rs.getString("codigo");
-                cliente.setId(id);
-                cliente.setNome(nome);
-                cliente.setCodigo(cd);
-                list.add(cliente);
+                produto.setId(id);
+                produto.setNome(nome);
+                produto.setCodigo(cd);
+                list.add(produto);
             }
         } catch (Exception e) {
             throw e;
         } finally {
-            closeConnection(connection, stm, rs);
+            closeConection(connection, stm, rs);
         }
         return list;
     }
+
     @Override
-    public Integer excluir(Cliente cliente) throws Exception {
-            Connection connection = null;
+    public Integer excluir(Produto produto) throws Exception {
+        Connection connection = null;
         PreparedStatement stm = null;
         try {
             connection = ConnectionFactory.getConnection();
             String sql = getSqlDelete();
             stm = connection.prepareStatement(sql);
-            adicionarParametrosDelete(stm, cliente);
+            adicionarParametrosDelete(stm, produto);
             return stm.executeUpdate();
         } catch (Exception e) {
             throw e;
         } finally {
-            closeConnection(connection, stm, null);
+            closeConection(connection, stm, null);
         }
     }
 
-    private void adicionarParametrosDelete(PreparedStatement stm, Cliente cliente) throws SQLException{
-        stm.setString(1, cliente.getCodigo());
-    }
-
-    private String getSqlDelete() {
+    private String getSqlInsert() {
         StringBuilder sb = new StringBuilder();
-        sb.append("delete from tb_cliente_2 ");
-        sb.append("where codigo = ?");
+        sb.append("insert into tb_cliente_2 (id, codigo, nome)   ");
+        sb.append("values (nextval('sq_cliente_2'), ?, ?) ");
         return sb.toString();
     }
-    private void closeConnection(Connection connection, PreparedStatement stm, ResultSet rs) {
+    private void adicionarParametrosInsert(PreparedStatement stm, Produto produto) throws SQLException {
+        stm.setString(1, produto.getCodigo());
+        stm.setString(2, produto.getNome());
+    }
+    private void closeConection(Connection connection, PreparedStatement stm, ResultSet rs) {
         try {
             if (rs != null && !rs.isClosed()) {
                 rs.close();
@@ -142,44 +148,40 @@ public class ClienteDAO implements IClienteDAO {
             e1.printStackTrace();
         }
     }
-
-    private void adicionarParametrosInsert(PreparedStatement stm, Cliente cliente) throws SQLException {
-        stm.setString(1, cliente.getCodigo());
-        stm.setString(2, cliente.getNome());
-    }
-
-    private String getSqlInsert() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("insert into tb_cliente_2 (id, codigo, nome)  ");
-        sb.append("values (nextval('sq_cliente_2'), ?, ?)");
-        return sb.toString();
-    }
-    private void adicionarParametrosUpdate(PreparedStatement stm, Cliente cliente) throws SQLException{
-        stm.setString(1, cliente.getCodigo());
-        stm.setString(2, cliente.getNome());
-        stm.setLong(3, cliente.getId());
-    }
-
     private String getSqlUpdate() {
         StringBuilder sb = new StringBuilder();
-        sb.append("update tb_cliente_2  ");
-        sb.append("set nome = ?, codigo = ? ");
+        sb.append("update tb_cliente_2");
+        sb.append("set nome = ?, codigo = ?");
+        sb.append("where id = ?");
+        return sb.toString();
+    }
+    private void adicionarParametrosUpdate(PreparedStatement stm, Produto produto) throws SQLException {
+        stm.setLong(1, produto.getId());
+        stm.setString(2, produto.getNome());
+        stm.setString(3, produto.getCodigo());
+    }
+    private String getSqlSelect() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("update tb_cliente_2");
+        sb.append("set nome = ?, codigo = ?");
         sb.append("where id = ?");
         return sb.toString();
     }
     private void adicionarParametrosSelect(PreparedStatement stm, String codigo) throws SQLException {
         stm.setString(1, codigo);
     }
-
-    private String getSqlSelect() {
+    private String getSqlSelectAll() {
         StringBuilder sb = new StringBuilder();
-        sb.append("select * from tb_cliente_2 ");
+        sb.append("select * from tb_cliente_2");
+        return sb.toString();
+    }
+    private String getSqlDelete() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("delete from tb_cliente_2");
         sb.append("where codigo = ?");
         return sb.toString();
     }
-    private String getSqlSelectAll() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("select * from tb_cliente_2 ");
-        return sb.toString();
+    private void adicionarParametrosDelete(PreparedStatement stm, Produto produto) throws SQLException {
+        stm.setString(1, produto.getCodigo());
     }
 }
